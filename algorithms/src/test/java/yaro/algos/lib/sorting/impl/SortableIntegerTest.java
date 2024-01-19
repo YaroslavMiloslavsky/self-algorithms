@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import org.junit.jupiter.api.AfterAll;
@@ -40,7 +42,7 @@ public abstract class SortableIntegerTest {
     }
 
     @Test
-    void bubbleSortLargeArray() {
+    void bubbleSortLargeArray() throws InterruptedException, ExecutionException {
         log.info("About to sort large arrays");
         int randomNumber = 0;
         final int arraySize = 100_000;
@@ -60,14 +62,23 @@ public abstract class SortableIntegerTest {
         Arrays.sort(copiedArray);
         assertFalse(Arrays.equals(originalArray, copiedArray));
 
-        var startTime = System.currentTimeMillis();
-        sortAlgo.sortMePlease(originalArray);
-        var endTime = System.currentTimeMillis();
+        Runnable sortTask = () -> {
+            log.info(String.format("Running task on thread: %s", Thread.currentThread().getName()));
+            sortAlgo.sortMePlease(originalArray);
+        };
 
-        var customSortRunTime = (endTime - startTime) / 1000;
-        log.info(String.format("It took %d seconds for custom bubble sort to run", customSortRunTime));
-        if (maxRuntime < customSortRunTime)
-            maxRuntime = customSortRunTime;
+        var startTime = System.currentTimeMillis();
+        CompletableFuture
+                .runAsync(sortTask)
+                .thenRunAsync(() -> {
+                    log.info(String.format("Running task on thread: %s", Thread.currentThread().getName()));
+                    var endTime = System.currentTimeMillis();
+                    var customSortRunTime = (endTime - startTime) / 1000;
+                    log.info(String.format("It took %d seconds for custom bubble sort to run", customSortRunTime));
+                    if (maxRuntime < customSortRunTime)
+                        maxRuntime = customSortRunTime;
+                }).get(); // Blocking because we need that answer.
+
         assertArrayEquals(originalArray, copiedArray);
     }
 
