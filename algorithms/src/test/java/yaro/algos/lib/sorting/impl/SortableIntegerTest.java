@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
@@ -15,9 +17,9 @@ import yaro.algos.lib.sorting.Sortable;
 
 public abstract class SortableIntegerTest {
     private static final Logger log = Logger.getLogger(SortableIntegerTest.class.getName());
-    private static long maxRuntime = 0L;
     private Sortable<Integer> sortAlgo;
     private String sortAlgorithmName = "Abstract sort";
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     public SortableIntegerTest(Sortable<Integer> sortableAlgorithm, String name) {
         this.sortAlgorithmName = name;
@@ -25,7 +27,7 @@ public abstract class SortableIntegerTest {
     }
 
     @Test
-    void bubbleSortSimpleTest() {
+    void sortSimpleTest() {
         Integer[] arrayDefault = { 10, 4, 5, 23, -45, 43, 100, 3, 3, 69, 3 };
         Integer[] arrayCustom = arrayDefault.clone();
 
@@ -38,7 +40,7 @@ public abstract class SortableIntegerTest {
     }
 
     @Test
-    void bubbleSortLargeArray() throws InterruptedException, ExecutionException {
+    void sortLargeArray() throws InterruptedException, ExecutionException {
         log.info("About to sort large arrays using custom " + sortAlgorithmName);
         int randomNumber = 0;
         final int arraySize = 100_000;
@@ -65,21 +67,20 @@ public abstract class SortableIntegerTest {
 
         var startTime = System.currentTimeMillis();
         var sortingFuture = CompletableFuture
-                .runAsync(sortTask)
+                .runAsync(sortTask, executorService)
                 .thenRunAsync(() -> {
                     log.info(String.format("Running task on thread: %s", Thread.currentThread().getName()));
                     var endTime = System.currentTimeMillis();
                     var customSortRunTime = (endTime - startTime) / 1000;
                     log.info(String.format("It took %d seconds for custom %s to run", customSortRunTime,
                             sortAlgorithmName));
-                    if (maxRuntime < customSortRunTime)
-                        maxRuntime = customSortRunTime;
-                })
+                }, executorService)
                 .handle((result, exception) -> {
                     if (exception != null) {
                         log.warning("Could not sort: " + exception);
                         return null;
                     }
+                    log.info("Thread running: " + Thread.currentThread());
                     log.info("No exception encountered");
                     return result;
                 });
@@ -90,7 +91,7 @@ public abstract class SortableIntegerTest {
     }
 
     @Test
-    void bubbleSortTinyLargeArray() {
+    void sortTinyLargeArray() {
         Integer[] arrayDefault = { 10, 2 };
         Integer[] arrayCustom = arrayDefault.clone();
 
@@ -103,7 +104,7 @@ public abstract class SortableIntegerTest {
     }
 
     @Test
-    void bubbleSortEmptyArrayTest() {
+    void sortEmptyArrayTest() {
         Integer[] arrayDefault = {};
         Integer[] arrayCustom = arrayDefault.clone();
 
@@ -116,7 +117,7 @@ public abstract class SortableIntegerTest {
     }
 
     @Test
-    void bubbleSortNullArrayTest() {
+    void sortNullArrayTest() {
         Integer[] array = null;
 
         sortAlgo.sortMePlease(array);

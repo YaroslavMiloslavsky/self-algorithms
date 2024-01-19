@@ -9,7 +9,7 @@ public final class BubbleSortImpl<T extends Comparable<T>> implements Sortable<T
         if (elements == null || elements.length <= 1) return;
 
         for (int i = 0; i < elements.length; i++) {
-            for (int j = 0; j + 1 < elements.length - i /* Optimization */; j++) {
+            for (int j = 0; j + 1 < elements.length - i; j++) {
                 if (elements[j].compareTo(elements[j + 1]) > 0) {
                     sortInPlace(elements, j);
                 }
@@ -22,7 +22,4 @@ public final class BubbleSortImpl<T extends Comparable<T>> implements Sortable<T
         elements[j] = elements[j + 1];
         elements[j + 1] = temp;
     }
-
-   
-
 }
