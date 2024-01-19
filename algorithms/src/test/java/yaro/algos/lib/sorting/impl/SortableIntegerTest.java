@@ -12,10 +12,14 @@ import org.junit.jupiter.api.Test;
 
 import yaro.algos.lib.sorting.Sortable;
 
-class BubbleSortImplTest {
-
-    private static final Logger log = Logger.getLogger(BubbleSortImplTest.class.getName());
+public abstract class SortableIntegerTest {
+    private static final Logger log = Logger.getLogger(SortableIntegerTest.class.getName());
     private static long maxRuntime = 0L;
+    private Sortable<Integer> sortAlgo;
+
+    public SortableIntegerTest(Sortable<Integer> sortableAlgorithm) {
+        this.sortAlgo = sortableAlgorithm;
+    }
 
     @AfterAll
     static void showSortingStats() {
@@ -30,8 +34,7 @@ class BubbleSortImplTest {
         Arrays.sort(arrayDefault);
         assertFalse(Arrays.equals(arrayDefault, arrayCustom));
 
-        Sortable<Integer> librarySort = new BubbleSortImpl<>();
-        librarySort.sortMePlease(arrayCustom);
+        sortAlgo.sortMePlease(arrayCustom);
 
         assertArrayEquals(arrayDefault, arrayCustom);
     }
@@ -45,28 +48,26 @@ class BubbleSortImplTest {
         final int max = 1_000;
         Integer[] originalArray = new Integer[arraySize];
 
-
         for (int i = 0; i < arraySize; i++) {
             randomNumber = (int) ((Math.random() * (max - min)) + min);
             originalArray[i] = randomNumber;
         }
 
         Integer[] copiedArray = originalArray.clone();
-        
+
         assertArrayEquals(originalArray, copiedArray);
 
         Arrays.sort(copiedArray);
         assertFalse(Arrays.equals(originalArray, copiedArray));
 
-        Sortable<Integer> librarySort = new BubbleSortImpl<>();
-
         var startTime = System.currentTimeMillis();
-        librarySort.sortMePlease(originalArray);
+        sortAlgo.sortMePlease(originalArray);
         var endTime = System.currentTimeMillis();
 
         var customSortRunTime = (endTime - startTime) / 1000;
         log.info(String.format("It took %d seconds for custom bubble sort to run", customSortRunTime));
-        if (maxRuntime < customSortRunTime) maxRuntime = customSortRunTime;
+        if (maxRuntime < customSortRunTime)
+            maxRuntime = customSortRunTime;
         assertArrayEquals(originalArray, copiedArray);
     }
 
@@ -78,8 +79,7 @@ class BubbleSortImplTest {
         Arrays.sort(arrayDefault);
         assertFalse(Arrays.equals(arrayDefault, arrayCustom));
 
-        Sortable<Integer> librarySort = new BubbleSortImpl<>();
-        librarySort.sortMePlease(arrayCustom);
+        sortAlgo.sortMePlease(arrayCustom);
 
         assertArrayEquals(arrayDefault, arrayCustom);
     }
@@ -92,8 +92,7 @@ class BubbleSortImplTest {
         Arrays.sort(arrayDefault);
         Arrays.equals(arrayDefault, arrayCustom);
 
-        Sortable<Integer> librarySort = new BubbleSortImpl<>();
-        librarySort.sortMePlease(arrayCustom);
+        sortAlgo.sortMePlease(arrayCustom);
 
         assertArrayEquals(arrayDefault, arrayCustom);
     }
@@ -102,10 +101,8 @@ class BubbleSortImplTest {
     void bubbleSortNullArrayTest() {
         Integer[] array = null;
 
-        Sortable<Integer> librarySort = new BubbleSortImpl<>();
-        librarySort.sortMePlease(array);
+        sortAlgo.sortMePlease(array);
 
         assertEquals(array, null);
     }
-
 }
