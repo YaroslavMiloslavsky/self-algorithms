@@ -14,14 +14,16 @@ import java.util.logging.Logger;
 import org.junit.jupiter.api.Test;
 
 import yaro.algos.lib.sorting.Sortable;
+import yaro.algos.lib.sorting.factory.SortableFactory;
 
 public abstract class SortableIntegerTest {
     private static final Logger log = Logger.getLogger(SortableIntegerTest.class.getName());
     private Sortable<Integer> sortAlgo;
     private String sortAlgorithmName = "Abstract sort";
     private static final ExecutorService executorService = Executors.newFixedThreadPool(5);
+    protected final static SortableFactory<Integer> sortableFactory = new SortableFactory<>();
 
-    public SortableIntegerTest(Sortable<Integer> sortableAlgorithm, String name) {
+    protected SortableIntegerTest(Sortable<Integer> sortableAlgorithm, String name) {
         this.sortAlgorithmName = name;
         this.sortAlgo = sortableAlgorithm;
     }
