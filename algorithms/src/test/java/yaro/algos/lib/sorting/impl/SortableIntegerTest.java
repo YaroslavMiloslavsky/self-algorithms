@@ -9,7 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import yaro.algos.lib.sorting.Sortable;
@@ -18,14 +17,11 @@ public abstract class SortableIntegerTest {
     private static final Logger log = Logger.getLogger(SortableIntegerTest.class.getName());
     private static long maxRuntime = 0L;
     private Sortable<Integer> sortAlgo;
+    private String sortAlgorithmName = "Abstract sort";
 
-    public SortableIntegerTest(Sortable<Integer> sortableAlgorithm) {
+    public SortableIntegerTest(Sortable<Integer> sortableAlgorithm, String name) {
+        this.sortAlgorithmName = name;
         this.sortAlgo = sortableAlgorithm;
-    }
-
-    @AfterAll
-    static void showSortingStats() {
-        log.info(String.format("Longest runtime for this bubble sort is: %d seconds", maxRuntime));
     }
 
     @Test
@@ -43,7 +39,7 @@ public abstract class SortableIntegerTest {
 
     @Test
     void bubbleSortLargeArray() throws InterruptedException, ExecutionException {
-        log.info("About to sort large arrays");
+        log.info("About to sort large arrays using custom " + sortAlgorithmName);
         int randomNumber = 0;
         final int arraySize = 100_000;
         final int min = 1;
@@ -68,17 +64,28 @@ public abstract class SortableIntegerTest {
         };
 
         var startTime = System.currentTimeMillis();
-        CompletableFuture
+        var sortingFuture = CompletableFuture
                 .runAsync(sortTask)
                 .thenRunAsync(() -> {
                     log.info(String.format("Running task on thread: %s", Thread.currentThread().getName()));
                     var endTime = System.currentTimeMillis();
                     var customSortRunTime = (endTime - startTime) / 1000;
-                    log.info(String.format("It took %d seconds for custom bubble sort to run", customSortRunTime));
+                    log.info(String.format("It took %d seconds for custom %s to run", customSortRunTime,
+                            sortAlgorithmName));
                     if (maxRuntime < customSortRunTime)
                         maxRuntime = customSortRunTime;
-                }).get(); // Blocking because we need that answer.
+                })
+                .handle((result, exception) -> {
+                    if (exception != null) {
+                        log.warning("Could not sort: " + exception);
+                        return null;
+                    }
+                    log.info("No exception encountered");
+                    return result;
+                });
 
+        log.info("Waiting while we get the sorting result ...");
+        sortingFuture.get();
         assertArrayEquals(originalArray, copiedArray);
     }
 

@@ -7,7 +7,7 @@ final class BubbleSortImplIntegerTest extends SortableIntegerTest {
     static final Sortable<Integer> sortableAlgorithm = new BubbleSortImpl<>();
 
     public BubbleSortImplIntegerTest() {
-        super(sortableAlgorithm);
+        super(sortableAlgorithm, "Bubble Sort");
     }  
     
 }
