@@ -28,7 +28,9 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn --batch-mode -DskipTests package
+      run: |
+        cd algorithms
+        mvn --batch-mode -DskipTests package
     - name: Test with Maven
       run: mvn --batch-mode test
       continue-on-error: ${{ env.TESTS_CONTINUE_ON_ERROR }}
