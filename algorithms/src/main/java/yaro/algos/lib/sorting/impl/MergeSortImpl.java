@@ -3,7 +3,7 @@ package yaro.algos.lib.sorting.impl;
 import java.util.Arrays;
 import yaro.algos.lib.sorting.Sortable;
 
-public class MergeSortImpl<T extends Comparable<T>> implements Sortable<T> {
+public final class MergeSortImpl<T extends Comparable<T>> implements Sortable<T> {
 
     @Override
     public void sortMePlease(T[] elements) {
