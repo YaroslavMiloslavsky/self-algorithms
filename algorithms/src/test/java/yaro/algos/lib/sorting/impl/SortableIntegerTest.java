@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -68,15 +70,21 @@ public abstract class SortableIntegerTest {
         };
 
         var startTime = System.currentTimeMillis();
-        var sortingFuture = CompletableFuture
-                .runAsync(sortTask, executorService)
+        List<CompletableFuture<Void>> jobs = new ArrayList<>();
+
+        jobs.add(CompletableFuture
+                .runAsync(sortTask, executorService));
+
+        log.info("Waiting while we get the sorting result ...");
+
+        CompletableFuture.allOf(jobs.toArray(CompletableFuture[]::new))
                 .thenRunAsync(() -> {
-                    log.info(String.format("Running task on thread: %s", Thread.currentThread().getName()));
-                    var endTime = System.currentTimeMillis();
-                    var customSortRunTime = (endTime - startTime) / 1000;
-                    log.info(String.format("It took %d seconds for custom %s to run", customSortRunTime,
-                            sortAlgorithmName));
-                }, executorService)
+            log.info(String.format("Running task on thread: %s", Thread.currentThread().getName()));
+            var endTime = System.currentTimeMillis();
+            var customSortRunTime = (endTime - startTime) / 1000;
+            log.info(String.format("It took %d seconds for custom %s to run", customSortRunTime,
+                    sortAlgorithmName));
+        }, executorService)
                 .handle((result, exception) -> {
                     if (exception != null) {
                         log.warning("Could not sort: " + exception);
@@ -85,10 +93,8 @@ public abstract class SortableIntegerTest {
                     log.info("Thread running: " + Thread.currentThread());
                     log.info("No exception encountered");
                     return result;
-                });
-
-        log.info("Waiting while we get the sorting result ...");
-        sortingFuture.get();
+                })
+                .join();
         assertArrayEquals(originalArray, copiedArray);
     }
 
